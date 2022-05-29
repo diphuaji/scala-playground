@@ -45,6 +45,6 @@ bin/
 *.class
 
 # servers
-tunnels.conf
+local_settings.conf
 
 docker/data

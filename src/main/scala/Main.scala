@@ -12,26 +12,6 @@ object Main extends App {
   }
 
 
-//  println("Hello, Program started!")
-//  if (args.length > 0) {
-//    val source = Source.fromFile(args.head)
-//    try {
-//      val lines = source.getLines.toList
-//
-//      val longestWidthLength = lines.reduceLeft((a: String, b: String) => {
-//        if (a.length > b.length) a else b
-//      }).length.toString.length
-//      for (line <- lines) {
-//        val length = line.length.toString.length
-//        " " * longestWidthLength
-//        println(" " * (longestWidthLength - length) + line.length.toString + " | " + line)
-//      }
-//    } finally {
-//      source.close()
-//    }
-//  } else
-//    Console.err.println("Please enter filename")
-
   val func = printStuffFunc{Calendar.getInstance.getTimeInMillis}
   func()
   Thread.sleep(1000)

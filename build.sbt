@@ -1,7 +1,7 @@
 
 // The simplest possible sbt build file is just one line:
 
-scalaVersion := "2.13.3"
+scalaVersion := "2.12.15"
 // That is, to create a valid sbt build, all you've got to do is define the
 // version of Scala you'd like your project to use.
 
@@ -80,7 +80,6 @@ lazy val helloWorld = (project in file(".")).
  settings(
    inThisBuild(List(
      organization := "ch.epfl.scala",
-     scalaVersion := "2.13.3"
    )),
    name := "hello-world"
  )
@@ -89,7 +88,6 @@ lazy val rational = (project in file("rational")).
   settings(
     inThisBuild(List(
       organization := "ch.epfl.scala",
-      scalaVersion := "2.13.3"
     )),
     name := "rational"
   )
@@ -98,7 +96,6 @@ lazy val akkaStream = (project in file("akka-stream")).
   settings(
     inThisBuild(List(
       organization := "ch.epfl.scala",
-      scalaVersion := "2.13.3"
     )),
     libraryDependencies += "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
     name := "akka-stream"
@@ -108,23 +105,22 @@ lazy val liquibase = (project in file("liquibase")).
   settings(
     inThisBuild(List(
       organization := "xtp",
-      scalaVersion := "2.13.3"
     )),
     libraryDependencies += "org.liquibase" % "liquibase-core" % "4.7.0",
     name := "liquibase"
   )
 
-//lazy val slickPlay = (project in (file("slick-play")))
-//  .settings(
-//    name := "slick-play",
-//    libraryDependencies ++= Seq(
-//      "mysql" % "mysql-connector-java" % "8.0.25",
-//      "org.slf4j" % "slf4j-nop" % "1.6.4",
-//      "com.typesafe.slick" %% "slick" % slickVersion,
-//      "com.typesafe.slick" %% "slick-codegen" % slickVersion,
-//      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion
-//    )
-//  )
+lazy val slickPlay = (project in (file("slick-play")))
+  .settings(
+    name := "slick-play",
+    libraryDependencies ++= Seq(
+      "mysql" % "mysql-connector-java" % "8.0.25",
+      "org.slf4j" % "slf4j-nop" % "1.6.4",
+      "com.typesafe.slick" %% "slick" % slickVersion,
+      "com.typesafe.slick" %% "slick-codegen" % slickVersion,
+      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion
+    )
+  )
 
 val circeVersion = "0.14.1"
 lazy val circe = (project in (file("circe")))
