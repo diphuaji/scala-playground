@@ -19,7 +19,11 @@ version := "1.0"
 
 val slickVersion = "3.2.3"
 
-val AkkaVersion = "2.6.14"
+val akkaVersion = "2.6.14"
+val oldAkkaVersion = "2.5.26"
+
+val akkaHttpVersion = "10.1.15"
+val oldAkkaHttpVersion = "10.1.11"
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -100,9 +104,24 @@ lazy val akkaStream = (project in file("akka-stream")).
       organization := "ch.epfl.scala",
       scalaVersion := "2.13.3"
     )),
-    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % AkkaVersion,
+    libraryDependencies += "com.typesafe.akka" %% "akka-stream" % oldAkkaVersion,
     name := "akka-stream"
   )
+
+lazy val akkaHttp = (project in file("akka-http")).
+settings(
+  inThisBuild(List(
+    organization := "ch.epfl.scala",
+    scalaVersion := "2.13.3"
+  )),
+  libraryDependencies +=  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+  libraryDependencies += "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
+  libraryDependencies += "com.typesafe.akka" %% "akka-stream" % akkaVersion,
+  name := "akka-http",
+  run / fork :=true,
+  run / connectInput := true,
+  run / javaOptions  ++= Seq("-Djdk.tls.disabledAlgorithms=TLSv1.1")
+)
 
 lazy val liquibase = (project in file("liquibase")).
   settings(
@@ -114,17 +133,27 @@ lazy val liquibase = (project in file("liquibase")).
     name := "liquibase"
   )
 
-//lazy val slickPlay = (project in (file("slick-play")))
-//  .settings(
-//    name := "slick-play",
-//    libraryDependencies ++= Seq(
-//      "mysql" % "mysql-connector-java" % "8.0.25",
-//      "org.slf4j" % "slf4j-nop" % "1.6.4",
-//      "com.typesafe.slick" %% "slick" % slickVersion,
-//      "com.typesafe.slick" %% "slick-codegen" % slickVersion,
-//      "com.typesafe.slick" %% "slick-hikaricp" % slickVersion
-//    )
-//  )
+lazy val slickGen = taskKey[Seq[File]]("Generate Tables.scala")
+slickGen := {
+  val dir = (Compile / sourceManaged).value
+  val outputDir = dir / "slick"
+  val url = "jdbc:mysql://localhost:3306/test?user=dbadmin&password=password" // connection info
+  val jdbcDriver = "com.mysql.cj.jdbc.Drive"
+  val slickDriver = "slick.jdbc.JdbcProfile"
+  val pkg = "demo"
+
+  val cp = (Compile / dependencyClasspath).value
+  val s = streams.value
+
+  runner.value.run("slick.codegen.SourceCodeGenerator",
+    cp.files,
+    Array(slickDriver, jdbcDriver, url, outputDir.getPath, pkg),
+    s.log).failed foreach (sys error _.getMessage)
+
+  val file = outputDir / pkg / "Tables.scala"
+
+  Seq(file)
+}
 
 val circeVersion = "0.14.1"
 lazy val circe = (project in (file("circe")))
@@ -137,6 +166,27 @@ lazy val circe = (project in (file("circe")))
     ).map(_ % circeVersion)
   )
 
+lazy val configTest = (project in (file("config-test")))
+  .settings(
+    name := "configTest",
+    libraryDependencies += "com.typesafe" % "config" % "1.4.2"
+  )
+
+lazy val akkaActor = (project in (file("akka-actor")))
+  .settings(
+    name := "akkaActor",
+    libraryDependencies += "com.typesafe" % "config" % "1.4.2",
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+      "ch.qos.logback" % "logback-classic" % "1.2.9"
+    )
+  )
+
+lazy val functionalQueue = (project in (file("functional-queue")))
+  .settings(
+    name := "functionalQueue"
+  )
+  
 
 // To learn more about multi-project builds, head over to the official sbt
 // documentation at http://www.scala-sbt.org/documentation.html
