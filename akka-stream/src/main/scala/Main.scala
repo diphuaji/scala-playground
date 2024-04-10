@@ -43,21 +43,6 @@ object Main extends App {
    * This
    */
   def graph = {
-    val sink = Sink.seq[(String, Int)]
-    val g = RunnableGraph.fromGraph(GraphDSL.create() { implicit builder =>
-      import GraphDSL.Implicits._
-      val in = Source(1 to 10).map(i=>(i.toString, 1L))
-      val partition = builder.add(Partition[(String, Long)](2, a=>{
-        if (a._1.toInt<6) 0 else 1
-      }))
-      in ~> partition.in
-      val merge = builder.add(Merge[(String, Long)](2))
-      partition.out(1) ~> merge.in(1)
-      partition.out(0) ~> merge.in(0)
-      merge ~> Sink.ignore
-      ClosedShape
-    })
-     g.run()
   }
 
 
@@ -126,7 +111,25 @@ object Main extends App {
     println(s"result: ${Await.result( sum, 2.seconds)}")
   }
 
-  testMaterializer
+  def testSameSourceFanoutWithDifferentOutput = {
+    val sink = Sink.seq[Int]
+    val g = RunnableGraph.fromGraph(GraphDSL.create(sink) { implicit builder => sink =>
+      import GraphDSL.Implicits._
+      val source = Source(1 to 10)
+      val broadCast = builder.add(Broadcast[Int](2))
+      source ~> broadCast.in
+      val merge = builder.add(Merge[Int](2))
+      broadCast.out(1).fold(0)((inNum, outNum)=>inNum+outNum) ~> merge.in(1)
+      broadCast.out(0) ~> merge.in(0)
+      merge ~> sink
+      ClosedShape
+    })
+    val f = g.run()
+    print(Await.result(f, 300.millis))
+  }
+
+  // testMaterializer
+  testSameSourceFanoutWithDifferentOutput 
 
   system.terminate()
 }
